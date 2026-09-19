@@ -1,49 +1,85 @@
-# CoreCat
+# Cat Menu Bar
 
-A tiny native macOS menu-bar system monitor whose running cat speed follows total CPU load.
+**Code name:** `cat_menubar`
 
-**Target:** macOS 11 Big Sur, including Apple Silicon M1.  
-**Stack:** Swift + AppKit + QuartzCore + Mach + IOKit. No third-party runtime dependencies.
+A tiny native macOS menu-bar monitor whose running-cat speed follows total CPU load.
 
-## What it does
+**Target:** macOS 11 Big Sur, especially Apple Silicon M1.  
+**Runtime stack:** Swift + AppKit + QuartzCore + Mach + IOKit. No third-party runtime dependencies.
 
-- Animated menu-bar cat, with speed driven by total CPU usage.
-- Two cat styles:
-  - **Classic RunCat**: the original five-frame RunCat art by Takuto Nakamura (Kyome22).
-  - **Ruslan outline**: the `cat walking.json` animation from RuslanDemyanov/RunningCat, rendered by CoreCat's small built-in subset renderer instead of Lottie.
-- Click the cat for a live panel showing:
-  - total CPU usage;
-  - one live bar per logical CPU core;
-  - Apple Silicon GPU utilization when the AGX driver exposes it;
-  - RAM used / total, compressed memory, and swap.
-- Right-click for cat style and Quit.
-- Pauses sampling and animation while the Mac sleeps.
+## Features
 
-## Low-overhead choices
+- Running cat in the menu bar; animation speed tracks total CPU load.
+- Two animation styles:
+  - **Classic RunCat**, the original five-frame art by Takuto Nakamura (Kyome22).
+  - **Ruslan outline**, from RuslanDemyanov/RunningCat's `cat walking.json`, rendered by a small built-in subset renderer instead of shipping Lottie.
+- Left-click: live panel with total CPU, every logical core, RAM/compression/swap, and best-effort Apple Silicon GPU usage.
+- Right-click: choose cat style, About, or Quit.
+- Stops sampling/animation across system sleep and resumes on wake.
 
-The status animation is a `CAKeyframeAnimation` over cached `CGImage` frames, so Swift does not run a timer for every animation frame. CPU sampling is normally 1 Hz. While the popover is open it rises to 2 Hz and additionally samples RAM/GPU. GPU access reads the AGX driver's `PerformanceStatistics` dictionary directly through IOKit; it does not launch `ioreg` or `powermetrics`.
+## Build
 
-The AGX GPU statistic is an undocumented driver property. On an M1 it is normally available without root, but CoreCat treats it as best-effort and displays `N/A` if unavailable.
-
-## Build on Big Sur
-
-You need Apple's Swift toolchain / Xcode Command Line Tools. The package deliberately uses `swift-tools-version: 5.3` and `macOS(.v11)` so it does not require the modern Swift 5.9+ toolchains used by newer RunCat projects.
+The normal build uses **`swiftc` directly**, not Xcode projects or XCTest:
 
 ```bash
 ./build-app.sh
-open build/CoreCat.app
+open "build/Cat Menu Bar.app"
 ```
 
-`build-app.sh` first downloads the two upstream Apache-2.0 animation assets from GitHub, builds a release executable, and assembles an ad-hoc-signed `.app` bundle.
+Required: `swiftc` plus a macOS SDK usable by that compiler. The script uses `xcrun --sdk macosx --show-sdk-path` when `xcrun` exists, otherwise it lets `swiftc` use its configured default SDK. `codesign` is optional and used only for an ad-hoc local signature. `actool` and `xctest` are not required.
 
-If you already ran `vendor-assets.sh`, rebuilding does not redownload existing assets.
+On the first build, `vendor-assets.sh` downloads the pinned upstream Apache-2.0 animation assets if `Resources/` is absent. Later builds reuse them. `Package.swift` is retained as an optional SwiftPM project description, but `build-app.sh` does not depend on `swift build`.
 
-## Caveats
+## Source structure
 
-- Per-core CPU numbers are logical-core utilization from Mach processor tick counters. CoreCat intentionally does not guess which logical core is a P-core vs E-core.
-- The Ruslan animation renderer implements only the subset of Lottie needed by the bundled animation. It is not intended as a general Lottie library.
-- I cannot compile against the macOS 11 SDK in the environment where this source bundle was generated. The code is written to Big Sur-era APIs and Swift 5.3 syntax, but the first build on an actual Big Sur toolchain is the real compatibility test.
+- `main.swift` — creates `NSApplication` and enters the AppKit event loop.
+- `AppDelegate.swift` — accessory/menu-bar app startup and main app menu.
+- `StatusController.swift` — owns the status item, popover, context menu, sleep/wake behavior, selected cat style, and CPU-to-speed mapping.
+- `CatLayerView.swift` — menu-bar renderer; animates cached `CGImage` frames with Core Animation.
+- `CatFrameLoader.swift` — loads/rasterizes both cat animation families.
+- `MiniLottieRenderer.swift` — intentionally tiny renderer for only the vector/keyframe features used by Ruslan's bundled Lottie JSON.
+- `SystemSampler.swift` — background sampling scheduler: 1 Hz normally, 2 Hz while the popover is open.
+- `CPUSampler.swift` — total and per-logical-core usage from Mach `host_processor_info()` tick deltas.
+- `MemorySampler.swift` — RAM/compression/swap from Mach VM statistics and `sysctl`.
+- `GPUReader.swift` — best-effort Apple Silicon GPU utilization/mapped memory from the AGX IOKit registry.
+- `StatsViewController.swift`, `CoreBarsView.swift` — lightweight AppKit statistics UI.
+- `Models.swift` — metric snapshot/value types and cat-style enum.
+- `ResourceLocator.swift` — finds animation assets in the app bundle, source tree, or `CAT_MENUBAR_RESOURCE_DIR`.
+- `build-app.sh` — direct `swiftc` compile + `.app` assembly + optional ad-hoc signing.
+- `vendor-assets.sh` — fetches pinned third-party assets and verifies Git blob IDs when `git` is available.
+
+## Design choices
+
+**Low resident overhead.** The cat is animated by `CAKeyframeAnimation`; Swift does not wake for every frame. Only the animation speed changes when a new CPU sample arrives. Expensive-ish RAM/GPU sampling is disabled while the panel is closed.
+
+**Native APIs, no helper processes.** CPU/RAM use Mach APIs. GPU uses IOKit directly rather than periodically spawning `ioreg` or `powermetrics`. The app has no Electron/WebView, Python process, Lottie framework, or other runtime dependency.
+
+**Logical-core truth over guessed topology.** Per-core bars report what Mach exposes. The app does not guess M1 P-core/E-core identity from ordering unless a reliable API is added later.
+
+**Small special-purpose Lottie implementation.** Ruslan's animation is pre-rendered into cached frames at startup. Supporting only that asset keeps code/RAM/CPU smaller than embedding a general animation engine.
+
+## Known weaknesses
+
+- **GPU telemetry is unofficial.** `AGXAccelerator/PerformanceStatistics` is an undocumented driver interface and can be missing or renamed; the UI then shows `N/A`.
+- **RAM “used” is an approximation.** macOS memory accounting has several reasonable definitions. This uses occupied VM pages minus cheaply reclaimable purgeable/external cache, similar to established system monitors, but it will not exactly equal every Activity Monitor number.
+- **Ruslan renderer is deliberately incomplete.** It handles this animation, not arbitrary Lottie files; easing is simplified and decorative speed-line layers are omitted.
+- **No historical graphs yet.** Metrics are current snapshots only.
+- **No P/E-core labels yet.** Bars are logical CPUs in Mach's order.
+- **No test suite requiring XCTest.** The project currently favors tiny build dependencies; metric parsers/math could later gain standalone unit tests that do not require `xctest`, or XCTest could remain optional.
+- **Big Sur runtime still needs your real-machine test.** This environment cannot link against Apple's macOS 11 SDK or exercise M1 AGX counters.
+
+## Plausible future features
+
+- User-adjustable sample interval and CPU-to-cat-speed curve.
+- Optional CPU percentage text beside the cat.
+- Short rolling graphs for CPU/GPU/RAM in the popover.
+- P-core/E-core grouping on Apple Silicon when topology can be identified robustly.
+- Thermal pressure, load average, battery/power, network, disk I/O, and top-process views, all opt-in so idle overhead stays low.
+- Launch-at-login support.
+- Custom runner/frame-set import.
+- Better Ruslan animation fidelity, or offline pre-rasterization to remove the subset renderer from the runtime entirely.
+- Self-monitoring/debug panel showing Cat Menu Bar's own CPU, wakeups, and resident memory.
 
 ## Licenses / attribution
 
-See `THIRD_PARTY_NOTICES.md` and `LICENSE`.
+See `THIRD_PARTY_NOTICES.md` and `LICENSE`. The borrowed RunCat/RunningCat material is Apache-2.0 and pinned to specific upstream revisions.

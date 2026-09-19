@@ -66,11 +66,11 @@ final class StatusController: NSObject, NSPopoverDelegate {
         contextMenu.addItem(ruslanItem)
         contextMenu.addItem(.separator())
 
-        let about = NSMenuItem(title: "About CoreCat", action: #selector(showAbout(_:)), keyEquivalent: "")
+        let about = NSMenuItem(title: "About Cat Menu Bar", action: #selector(showAbout(_:)), keyEquivalent: "")
         about.target = self
         contextMenu.addItem(about)
 
-        let quit = NSMenuItem(title: "Quit CoreCat", action: #selector(quit(_:)), keyEquivalent: "q")
+        let quit = NSMenuItem(title: "Quit Cat Menu Bar", action: #selector(quit(_:)), keyEquivalent: "q")
         quit.target = self
         contextMenu.addItem(quit)
         updateStyleChecks()
@@ -154,8 +154,8 @@ final class StatusController: NSObject, NSPopoverDelegate {
 
     @objc private func showAbout(_ sender: Any?) {
         let alert = NSAlert()
-        alert.messageText = "CoreCat"
-        alert.informativeText = "Native low-overhead CPU cat for macOS.\n\nClassic RunCat artwork: Takuto Nakamura (Kyome22), Apache-2.0.\nRuslan animation: RuslanDemyanov/RunningCat, Apache-2.0.\n\nSee THIRD_PARTY_NOTICES.md in the app Resources folder for details."
+        alert.messageText = "Cat Menu Bar"
+        alert.informativeText = "Native low-overhead CPU cat for macOS.\nCode name: cat_menubar.\n\nClassic RunCat artwork: Takuto Nakamura (Kyome22), Apache-2.0.\nRuslan animation: RuslanDemyanov/RunningCat, Apache-2.0.\n\nSee THIRD_PARTY_NOTICES.md in the app Resources folder for details."
         alert.addButton(withTitle: "OK")
         NSApp.activate(ignoringOtherApps: true)
         alert.runModal()

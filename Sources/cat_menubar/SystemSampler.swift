@@ -3,7 +3,7 @@ import Foundation
 final class SystemSampler {
     var onSnapshot: ((SystemSnapshot) -> Void)?
 
-    private let queue = DispatchQueue(label: "local.corecat.sampler", qos: .utility)
+    private let queue = DispatchQueue(label: "local.cat-menubar.sampler", qos: .utility)
     private let cpu = CPUSampler()
     private let memory = MemorySampler()
     private let gpu = GPUReader()

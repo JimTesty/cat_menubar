@@ -19,7 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         main.addItem(appItem)
 
         let appMenu = NSMenu()
-        let quit = NSMenuItem(title: "Quit CoreCat", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        let quit = NSMenuItem(title: "Quit Cat Menu Bar", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         appMenu.addItem(quit)
         appItem.submenu = appMenu
         NSApp.mainMenu = main

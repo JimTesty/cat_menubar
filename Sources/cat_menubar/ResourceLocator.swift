@@ -4,7 +4,7 @@ struct ResourceLocator {
     static func url(relativePath: String) -> URL? {
         let fm = FileManager.default
 
-        if let root = ProcessInfo.processInfo.environment["CORECAT_RESOURCE_DIR"] {
+        if let root = ProcessInfo.processInfo.environment["CAT_MENUBAR_RESOURCE_DIR"] {
             let url = URL(fileURLWithPath: root, isDirectory: true).appendingPathComponent(relativePath)
             if fm.fileExists(atPath: url.path) { return url }
         }
