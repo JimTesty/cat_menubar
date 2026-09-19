@@ -9,11 +9,17 @@ final class StatusController: NSObject, NSPopoverDelegate {
     private let contextMenu = NSMenu()
     private var classicItem: NSMenuItem!
     private var ruslanItem: NSMenuItem!
-    private var smoothedSpeed: Double = 0.6
+    private var smoothedCPU = ExponentialSmoother(
+        timeConstant: AppConfig.Sampling.cpuDisplaySmoothingTimeConstant
+    )
+    private var smoothedSpeed = ExponentialSmoother(
+        timeConstant: AppConfig.Sampling.animationSpeedSmoothingTimeConstant,
+        initialValue: AppConfig.Animation.initialSpeed
+    )
 
     override init() {
-        statusItem = NSStatusBar.system.statusItem(withLength: 32)
-        catView = CatLayerView(frame: NSRect(x: 2, y: 1, width: 28, height: 20))
+        statusItem = NSStatusBar.system.statusItem(withLength: AppConfig.StatusItem.length)
+        catView = CatLayerView(frame: AppConfig.StatusItem.initialCatFrame)
         super.init()
 
         setupStatusItem()
@@ -41,7 +47,10 @@ final class StatusController: NSObject, NSPopoverDelegate {
         button.image = nil
         button.addSubview(catView)
         catView.autoresizingMask = [.width, .height]
-        catView.frame = button.bounds.insetBy(dx: 2, dy: 1)
+        catView.frame = button.bounds.insetBy(
+            dx: AppConfig.StatusItem.catFrameInset.width,
+            dy: AppConfig.StatusItem.catFrameInset.height
+        )
         button.target = self
         button.action = #selector(statusButtonClicked(_:))
         button.sendAction(on: [.leftMouseUp, .rightMouseUp])
@@ -49,7 +58,7 @@ final class StatusController: NSObject, NSPopoverDelegate {
     }
 
     private func setupPopover() {
-        popover.contentSize = NSSize(width: 370, height: 360)
+        popover.contentSize = AppConfig.Popover.size
         popover.behavior = .transient
         popover.delegate = self
         popover.contentViewController = statsController
@@ -79,9 +88,13 @@ final class StatusController: NSObject, NSPopoverDelegate {
     private func setupSampler() {
         sampler.onSnapshot = { [weak self] snapshot in
             guard let self = self else { return }
-            self.updateCat(cpu: snapshot.cpu.total)
-            self.statusItem.button?.toolTip = String(format: "CPU %.1f%%", snapshot.cpu.total * 100)
-            if self.popover.isShown { self.statsController.update(snapshot) }
+            let timestamp = ProcessInfo.processInfo.systemUptime
+            let displayCPU = self.smoothedCPU.update(snapshot.cpu.total, at: timestamp)
+            var displayedSnapshot = snapshot
+            displayedSnapshot.cpu.total = displayCPU
+            self.updateCat(cpu: displayCPU, at: timestamp)
+            self.statusItem.button?.toolTip = String(format: "CPU %.1f%%", displayCPU * 100)
+            if self.popover.isShown { self.statsController.update(displayedSnapshot) }
         }
     }
 
@@ -91,24 +104,40 @@ final class StatusController: NSObject, NSPopoverDelegate {
         center.addObserver(self, selector: #selector(didWake(_:)), name: NSWorkspace.didWakeNotification, object: nil)
     }
 
-    private func updateCat(cpu: Double) {
+    private func updateCat(cpu: Double, at timestamp: TimeInterval) {
         let target = animationSpeed(for: cpu)
-        smoothedSpeed += (target - smoothedSpeed) * 0.35
-        catView.setCPUSpeed(smoothedSpeed)
+        let speed = smoothedSpeed.update(target, at: timestamp)
+        catView.setCPUSpeed(speed)
     }
 
     // Closely follows the useful behavior of RuslanDemyanov/RunningCat's speed map,
     // but keeps a small nonzero idle pace and caps the top end at 4x.
     private func animationSpeed(for cpu: Double) -> Double {
         let u = min(1, max(0, cpu))
-        switch u {
-        case 0..<0.05: return 0.12
-        case 0.05..<0.15: return 0.30 + (u - 0.05) * 3.0
-        case 0.15..<0.30: return 0.60 + (u - 0.15) * 2.0
-        case 0.30..<0.60: return 0.90 + (u - 0.30) * 2.5
-        case 0.60..<0.85: return 1.65 + (u - 0.60) * 4.0
-        default: return min(4.0, 2.65 + (u - 0.85) * 8.0)
+        if u < AppConfig.Animation.idleLoadUpperBound {
+            return AppConfig.Animation.idleSpeed
         }
+        if u < AppConfig.Animation.lowLoadUpperBound {
+            return AppConfig.Animation.lowLoadBaseSpeed
+                + (u - AppConfig.Animation.idleLoadUpperBound) * AppConfig.Animation.lowLoadSlope
+        }
+        if u < AppConfig.Animation.mediumLoadUpperBound {
+            return AppConfig.Animation.mediumLoadBaseSpeed
+                + (u - AppConfig.Animation.lowLoadUpperBound) * AppConfig.Animation.mediumLoadSlope
+        }
+        if u < AppConfig.Animation.highLoadUpperBound {
+            return AppConfig.Animation.highLoadBaseSpeed
+                + (u - AppConfig.Animation.mediumLoadUpperBound) * AppConfig.Animation.highLoadSlope
+        }
+        if u < AppConfig.Animation.veryHighLoadUpperBound {
+            return AppConfig.Animation.veryHighLoadBaseSpeed
+                + (u - AppConfig.Animation.highLoadUpperBound) * AppConfig.Animation.veryHighLoadSlope
+        }
+        return min(
+            AppConfig.Animation.maximumSpeed,
+            AppConfig.Animation.maximumLoadBaseSpeed
+                + (u - AppConfig.Animation.veryHighLoadUpperBound) * AppConfig.Animation.maximumLoadSlope
+        )
     }
 
     @objc private func statusButtonClicked(_ sender: NSStatusBarButton) {

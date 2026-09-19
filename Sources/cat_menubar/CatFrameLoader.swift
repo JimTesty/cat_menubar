@@ -27,7 +27,10 @@ enum CatFrameLoader {
               let data = try? Data(contentsOf: url) else {
             return nil
         }
-        let frames = MiniLottieRenderer.renderCatFrames(data: data, pixelSize: CGSize(width: 64, height: 64))
+        let frames = MiniLottieRenderer.renderCatFrames(
+            data: data,
+            pixelSize: CGSize(width: AppConfig.Ruslan.rasterSize, height: AppConfig.Ruslan.rasterSize)
+        )
         guard !frames.isEmpty else { return nil }
         // The source comp is 14 frames at 25 fps.
         return CatFrameSet(frames: frames, baseDuration: Double(frames.count) / 25.0)

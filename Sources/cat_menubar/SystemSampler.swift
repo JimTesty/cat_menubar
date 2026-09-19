@@ -16,6 +16,7 @@ final class SystemSampler {
             guard let self = self, !self.running else { return }
             self.running = true
             self.cpu.reset()
+            self.memory.start(on: self.queue)
             self.installTimer()
         }
     }
@@ -27,6 +28,7 @@ final class SystemSampler {
             self.timer?.setEventHandler {}
             self.timer?.cancel()
             self.timer = nil
+            self.memory.stop()
             self.cpu.reset()
         }
     }
@@ -45,8 +47,8 @@ final class SystemSampler {
         timer?.cancel()
 
         let source = DispatchSource.makeTimerSource(queue: queue)
-        let interval: DispatchTimeInterval = detailed ? .milliseconds(500) : .seconds(1)
-        source.schedule(deadline: .now(), repeating: interval, leeway: .milliseconds(80))
+        let interval = detailed ? AppConfig.Sampling.detailedInterval : AppConfig.Sampling.normalInterval
+        source.schedule(deadline: .now(), repeating: interval, leeway: AppConfig.Sampling.timerLeeway)
         source.setEventHandler { [weak self] in self?.tick() }
         timer = source
         source.resume()

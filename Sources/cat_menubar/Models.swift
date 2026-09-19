@@ -7,19 +7,27 @@ struct CPUSnapshot {
     static let empty = CPUSnapshot(total: 0, cores: [])
 }
 
+enum MemoryPressureLevel: String {
+    case normal = "Normal"
+    case warning = "Warning"
+    case critical = "Critical"
+}
+
 struct MemorySnapshot {
     var totalBytes: UInt64
     var usedBytes: UInt64
     var compressedBytes: UInt64
     var swapUsedBytes: UInt64
     var swapTotalBytes: UInt64
+    var pressure: MemoryPressureLevel
 
     static let empty = MemorySnapshot(
         totalBytes: 0,
         usedBytes: 0,
         compressedBytes: 0,
         swapUsedBytes: 0,
-        swapTotalBytes: 0
+        swapTotalBytes: 0,
+        pressure: .normal
     )
 }
 

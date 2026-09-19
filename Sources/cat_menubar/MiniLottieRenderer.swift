@@ -60,6 +60,9 @@ enum MiniLottieRenderer {
             return nil
         }
 
+        context.setAllowsAntialiasing(true)
+        context.setShouldAntialias(true)
+        context.interpolationQuality = .high
         context.clear(CGRect(x: 0, y: 0, width: CGFloat(width), height: CGFloat(height)))
         let scale = min(pixelSize.width / canvasSize.width, pixelSize.height / canvasSize.height)
         let drawW = canvasSize.width * scale
@@ -233,7 +236,7 @@ enum MiniLottieRenderer {
 
         context.saveGState()
         context.addPath(path)
-        if luminance > 0.65 {
+        if luminance > 0.65 && !AppConfig.Ruslan.fillShapesSolid {
             // In the source animation, white is the cat's interior against a transparent menu bar.
             // Clearing it produces a proper monochrome template mask for light/dark tinting.
             context.setBlendMode(.clear)

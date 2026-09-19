@@ -5,7 +5,7 @@ final class CatLayerView: NSView {
     private let frameLayer = CALayer()
     private var frameSets: [CatStyle: CatFrameSet] = [:]
     private var currentStyle: CatStyle = .classic
-    private var currentSpeed: Float = 1.0
+    private var currentSpeed: Float = Float(AppConfig.Animation.initialSpeed)
     private var currentSourceFrames: [CGImage] = []
     private var baseDuration: CFTimeInterval = 0.5
 
@@ -15,7 +15,7 @@ final class CatLayerView: NSView {
         layer?.masksToBounds = false
         frameLayer.contentsGravity = .resizeAspect
         frameLayer.magnificationFilter = .linear
-        frameLayer.minificationFilter = .linear
+        frameLayer.minificationFilter = .trilinear
         layer?.addSublayer(frameLayer)
 
         if let classic = CatFrameLoader.loadClassic() { frameSets[.classic] = classic }
@@ -67,9 +67,9 @@ final class CatLayerView: NSView {
     }
 
     func setCPUSpeed(_ speed: Double) {
-        let clamped = Float(min(4.0, max(0.08, speed)))
+        let clamped = Float(min(AppConfig.Animation.maximumSpeed, max(AppConfig.Animation.minimumSpeed, speed)))
         // Small changes are visually meaningless and needlessly perturb Core Animation timing.
-        if abs(clamped - currentSpeed) < 0.03 { return }
+        if abs(clamped - currentSpeed) < Float(AppConfig.Animation.minimumMeaningfulSpeedChange) { return }
         setLayerSpeedPreservingPhase(clamped)
         currentSpeed = clamped
     }
@@ -102,7 +102,7 @@ final class CatLayerView: NSView {
         let frames = currentSourceFrames.compactMap { tint($0) }
         guard !frames.isEmpty else { return }
 
-        let oldSpeed = preservingSpeed ? currentSpeed : max(0.08, currentSpeed)
+        let oldSpeed = preservingSpeed ? currentSpeed : max(Float(AppConfig.Animation.minimumSpeed), currentSpeed)
         frameLayer.removeAnimation(forKey: "cat.frames")
         frameLayer.contents = frames[0]
         frameLayer.speed = 1

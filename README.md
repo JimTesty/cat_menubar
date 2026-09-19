@@ -13,7 +13,7 @@ A tiny native macOS menu-bar monitor whose running-cat speed follows total CPU l
 - Two animation styles:
   - **Classic RunCat**, the original five-frame art by Takuto Nakamura (Kyome22).
   - **Ruslan outline**, from RuslanDemyanov/RunningCat's `cat walking.json`, rendered by a small built-in subset renderer instead of shipping Lottie.
-- Left-click: live panel with total CPU, every logical core, RAM/compression/swap, and best-effort Apple Silicon GPU usage.
+- Left-click: live panel with total CPU, every logical core, memory pressure, RAM/compression/swap, and best-effort Apple Silicon GPU usage.
 - Right-click: choose cat style, About, or Quit.
 - Stops sampling/animation across system sleep and resumes on wake.
 
@@ -34,6 +34,8 @@ On the first build, `vendor-assets.sh` downloads the pinned upstream Apache-2.0 
 
 - `main.swift` — creates `NSApplication` and enters the AppKit event loop.
 - `AppDelegate.swift` — accessory/menu-bar app startup and main app menu.
+- `AppConfig.swift` — central tuning values for sampling, smoothing, animation speed, and UI layout.
+- `ExponentialSmoother.swift` — time-aware exponential smoothing for displayed CPU and cat speed.
 - `StatusController.swift` — owns the status item, popover, context menu, sleep/wake behavior, selected cat style, and CPU-to-speed mapping.
 - `CatLayerView.swift` — menu-bar renderer; animates cached `CGImage` frames with Core Animation.
 - `CatFrameLoader.swift` — loads/rasterizes both cat animation families.
@@ -52,6 +54,8 @@ On the first build, `vendor-assets.sh` downloads the pinned upstream Apache-2.0 
 
 **Low resident overhead.** The cat is animated by `CAKeyframeAnimation`; Swift does not wake for every frame. Only the animation speed changes when a new CPU sample arrives. Expensive-ish RAM/GPU sampling is disabled while the panel is closed.
 
+**Observed baseline.** In the current local run, the app uses 25 MB of RAM and 0.0% CPU.
+
 **Native APIs, no helper processes.** CPU/RAM use Mach APIs. GPU uses IOKit directly rather than periodically spawning `ioreg` or `powermetrics`. The app has no Electron/WebView, Python process, Lottie framework, or other runtime dependency.
 
 **Logical-core truth over guessed topology.** Per-core bars report what Mach exposes. The app does not guess M1 P-core/E-core identity from ordering unless a reliable API is added later.
@@ -62,6 +66,7 @@ On the first build, `vendor-assets.sh` downloads the pinned upstream Apache-2.0 
 
 - **GPU telemetry is unofficial.** `AGXAccelerator/PerformanceStatistics` is an undocumented driver interface and can be missing or renamed; the UI then shows `N/A`.
 - **RAM “used” is an approximation.** macOS memory accounting has several reasonable definitions. This uses occupied VM pages minus cheaply reclaimable purgeable/external cache, similar to established system monitors, but it will not exactly equal every Activity Monitor number.
+- **Memory pressure is event-driven.** The Normal/Warning/Critical label comes from the system Dispatch memory-pressure signal and starts at Normal until macOS reports a pressure transition.
 - **Ruslan renderer is deliberately incomplete.** It handles this animation, not arbitrary Lottie files; easing is simplified and decorative speed-line layers are omitted.
 - **No historical graphs yet.** Metrics are current snapshots only.
 - **No P/E-core labels yet.** Bars are logical CPUs in Mach's order.

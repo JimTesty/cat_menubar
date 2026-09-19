@@ -1,7 +1,40 @@
 import Darwin
+import Dispatch
 import Foundation
 
 final class MemorySampler {
+    private var pressureLevel: MemoryPressureLevel = .normal
+    private var pressureSource: DispatchSourceMemoryPressure?
+
+    func start(on queue: DispatchQueue) {
+        guard pressureSource == nil else { return }
+
+        pressureLevel = .normal
+        let source = DispatchSource.makeMemoryPressureSource(
+            eventMask: [.normal, .warning, .critical],
+            queue: queue
+        )
+        source.setEventHandler { [weak self, source] in
+            guard let self = self else { return }
+            if source.data.contains(.critical) {
+                self.pressureLevel = .critical
+            } else if source.data.contains(.warning) {
+                self.pressureLevel = .warning
+            } else if source.data.contains(.normal) {
+                self.pressureLevel = .normal
+            }
+        }
+        pressureSource = source
+        source.resume()
+    }
+
+    func stop() {
+        pressureSource?.setEventHandler {}
+        pressureSource?.cancel()
+        pressureSource = nil
+        pressureLevel = .normal
+    }
+
     func sample() -> MemorySnapshot {
         var stats = vm_statistics64()
         var count = mach_msg_type_number_t(
@@ -22,7 +55,8 @@ final class MemorySampler {
                 usedBytes: 0,
                 compressedBytes: 0,
                 swapUsedBytes: swap.used,
-                swapTotalBytes: swap.total
+                swapTotalBytes: swap.total,
+                pressure: pressureLevel
             )
         }
 
@@ -50,7 +84,8 @@ final class MemorySampler {
             usedBytes: used,
             compressedBytes: compressed,
             swapUsedBytes: swap.used,
-            swapTotalBytes: swap.total
+            swapTotalBytes: swap.total,
+            pressure: pressureLevel
         )
     }
 
