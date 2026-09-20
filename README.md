@@ -52,6 +52,10 @@ animation assets if either asset is absent. Later builds reuse the checked-in
 assets. `Package.swift` is retained as an optional Swift Package Manager
 project description, but `build-app.sh` does not depend on `swift build`.
 
+The app icon source is `Resources/AppIcon.png`, while the bundle uses the
+compact native `Resources/AppIcon.icns`. Run `./make-app-icon.sh` after changing
+the PNG; the conversion details are in [docs/app-icon.md](docs/app-icon.md).
+
 ## Source structure
 
 - `main.swift` — creates `NSApplication` and enters the AppKit event loop.
@@ -71,6 +75,7 @@ project description, but `build-app.sh` does not depend on `swift build`.
 - `Models.swift` — metric snapshot/value types and cat-style enum.
 - `ResourceLocator.swift` — finds animation assets in the app bundle, source tree, or `CAT_MENUBAR_RESOURCE_DIR`.
 - `build-app.sh` — direct `swiftc` compile + `.app` assembly + optional ad-hoc signing.
+- `make-app-icon.sh` -- converts the transparent PNG artwork into the compact native macOS `.icns` bundle icon.
 - `vendor-assets.sh` — fetches pinned third-party assets and verifies Git blob IDs when `git` is available.
 
 ## Design choices
