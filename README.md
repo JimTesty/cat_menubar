@@ -5,6 +5,11 @@ A small native macOS menu-bar monitor whose running-cat speed follows total CPU 
 Cat Menu Bar targets macOS 11 Big Sur and later. It is written in Swift with
 AppKit, QuartzCore, Mach, and IOKit, with no third-party runtime dependencies.
 
+<p>
+<img src="docs/images/screenshot-runcat-dark.png" alt="Cat Menu Bar using the RunCat-style cat" />
+<img src="docs/images/screenshot-ruslan-dark.png" alt="Cat Menu Bar using the Ruslan-style cat" />
+</p>
+
 ## Features
 
 - Running cat in the menu bar; animation speed tracks total CPU load.
