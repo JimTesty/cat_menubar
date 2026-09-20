@@ -4,6 +4,7 @@ enum AppConfig {
     enum Sampling {
         static let normalInterval: DispatchTimeInterval = .seconds(1)
         static let detailedInterval: DispatchTimeInterval = .milliseconds(500)
+        static let diskSampleTickInterval = 2
         static let backgroundGPUInterval: TimeInterval = 1
         static let timerLeeway: DispatchTimeInterval = .milliseconds(80)
         static let cpuDisplaySmoothingTimeConstant: TimeInterval = 1.5

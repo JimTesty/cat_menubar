@@ -126,12 +126,13 @@ final class StatsViewController: NSViewController {
                 gib(memory.compressedBytes)
             )
             if memory.swapTotalBytes > 0 {
-                swapLabel.stringValue = String(
+                let swapText = String(
                     format: "Swap  %.2f / %.2f GiB",
                     gib(memory.swapUsedBytes), gib(memory.swapTotalBytes)
                 )
+                swapLabel.stringValue = swapTextWithDisk(swapText, memory: memory)
             } else {
-                swapLabel.stringValue = "Swap  0 GiB"
+                swapLabel.stringValue = swapTextWithDisk("Swap  0 GiB", memory: memory)
             }
         }
     }
@@ -151,5 +152,10 @@ final class StatsViewController: NSViewController {
 
     private func gib(_ bytes: UInt64) -> Double {
         Double(bytes) / 1_073_741_824.0
+    }
+
+    private func swapTextWithDisk(_ swapText: String, memory: MemorySnapshot) -> String {
+        guard let freeBytes = memory.diskFreeBytes else { return swapText }
+        return String(format: "%@  (disk %.2f GiB free)", swapText, gib(freeBytes))
     }
 }

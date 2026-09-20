@@ -19,6 +19,7 @@ struct MemorySnapshot {
     var compressedBytes: UInt64
     var swapUsedBytes: UInt64
     var swapTotalBytes: UInt64
+    var diskFreeBytes: UInt64?
     var pressure: MemoryPressureLevel
 
     static let empty = MemorySnapshot(
@@ -27,6 +28,7 @@ struct MemorySnapshot {
         compressedBytes: 0,
         swapUsedBytes: 0,
         swapTotalBytes: 0,
+        diskFreeBytes: nil,
         pressure: .normal
     )
 }

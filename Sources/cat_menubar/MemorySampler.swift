@@ -5,11 +5,15 @@ import Foundation
 final class MemorySampler {
     private var pressureLevel: MemoryPressureLevel = .normal
     private var pressureSource: DispatchSourceMemoryPressure?
+    private var diskFreeBytes: UInt64?
+    private var diskSamplesUntilNext = 0
 
     func start(on queue: DispatchQueue) {
         guard pressureSource == nil else { return }
 
         pressureLevel = .normal
+        diskFreeBytes = nil
+        diskSamplesUntilNext = 0
         let source = DispatchSource.makeMemoryPressureSource(
             eventMask: [.normal, .warning, .critical],
             queue: queue
@@ -33,9 +37,18 @@ final class MemorySampler {
         pressureSource?.cancel()
         pressureSource = nil
         pressureLevel = .normal
+        diskFreeBytes = nil
+        diskSamplesUntilNext = 0
     }
 
     func sample() -> MemorySnapshot {
+        if diskSamplesUntilNext == 0 {
+            diskFreeBytes = readDiskFreeBytes()
+            diskSamplesUntilNext = AppConfig.Sampling.diskSampleTickInterval - 1
+        } else {
+            diskSamplesUntilNext -= 1
+        }
+
         var stats = vm_statistics64()
         var count = mach_msg_type_number_t(
             MemoryLayout<vm_statistics64_data_t>.stride / MemoryLayout<integer_t>.stride
@@ -56,6 +69,7 @@ final class MemorySampler {
                 compressedBytes: 0,
                 swapUsedBytes: swap.used,
                 swapTotalBytes: swap.total,
+                diskFreeBytes: diskFreeBytes,
                 pressure: pressureLevel
             )
         }
@@ -85,8 +99,18 @@ final class MemorySampler {
             compressedBytes: compressed,
             swapUsedBytes: swap.used,
             swapTotalBytes: swap.total,
+            diskFreeBytes: diskFreeBytes,
             pressure: pressureLevel
         )
+    }
+
+    private func readDiskFreeBytes() -> UInt64? {
+        var filesystem = statfs()
+        let result = "/private/var/vm".withCString { path in
+            statfs(path, &filesystem)
+        }
+        guard result == 0, filesystem.f_bsize > 0 else { return nil }
+        return UInt64(filesystem.f_bavail) * UInt64(filesystem.f_bsize)
     }
 
     private func readSwap() -> (used: UInt64, total: UInt64) {
