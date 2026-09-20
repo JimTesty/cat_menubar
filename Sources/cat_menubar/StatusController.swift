@@ -208,7 +208,7 @@ final class StatusController: NSObject, NSPopoverDelegate {
     @objc private func showAbout(_ sender: Any?) {
         let alert = NSAlert()
         alert.messageText = "Cat Menu Bar"
-        alert.informativeText = "Native low-overhead CPU cat for macOS.\n\nKyome22 RunCat artwork: Takuto Nakamura, Apache-2.0.\nRuslan RunningCat animation: RuslanDemyanov, Apache-2.0.\n\nSee THIRD_PARTY_NOTICES.md in the app Resources folder for details."
+        alert.informativeText = "Native low-overhead CPU cat for macOS.\n\nKyome22 RunCat artwork:\nTakuto Nakamura, Apache-2.0.\nRuslan RunningCat animation:\nRuslanDemyanov, Apache-2.0.\n\nSee THIRD_PARTY_NOTICES.md in the app Resources folder for details."
         alert.addButton(withTitle: "OK")
         NSApp.activate(ignoringOtherApps: true)
         alert.runModal()

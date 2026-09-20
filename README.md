@@ -37,8 +37,9 @@ The normal build uses `swiftc` directly:
 
 ```bash
 ./build-app.sh
-open "build/Cat Menu Bar.app"
 ```
+
+The script restarts the app only if it was already running; otherwise use `open "build/Cat Menu Bar.app"`.
 
 You need a macOS Swift compiler and a macOS SDK supported by that compiler.
 The script uses `xcrun --sdk macosx --show-sdk-path` when available and falls

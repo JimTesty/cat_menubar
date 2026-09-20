@@ -72,5 +72,19 @@ fi
 
 echo
 echo "Built: $APP"
-echo "Run with: open '$APP'"
-echo "xctest is not used or required."
+# echo "xctest is not used or required."
+
+# Restart the app
+RUNNING_PIDS="$(pgrep -x "$CODE_NAME" || true)"
+if [[ -n "$RUNNING_PIDS" ]]; then
+  kill $RUNNING_PIDS 2>/dev/null || true
+
+  for _ in {1..20}; do
+    if ! pgrep -x "$CODE_NAME" >/dev/null; then
+      sleep 0.5
+      open "$APP" && echo "Relaunched: $APP"
+      break
+    fi
+    sleep 0.2
+  done
+fi
