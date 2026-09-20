@@ -19,7 +19,10 @@ enum CatFrameLoader {
             guard let compact = resized(cg, to: CGSize(width: 56, height: 36)) else { return nil }
             frames.append(compact)
         }
-        return CatFrameSet(frames: frames, baseDuration: 0.50)
+        return CatFrameSet(
+            frames: frames,
+            baseDuration: Double(frames.count) * AppConfig.Animation.classicFrameDuration
+        )
     }
 
     static func loadRuslan() -> CatFrameSet? {
@@ -32,8 +35,11 @@ enum CatFrameLoader {
             pixelSize: CGSize(width: AppConfig.Ruslan.rasterSize, height: AppConfig.Ruslan.rasterSize)
         )
         guard !frames.isEmpty else { return nil }
-        // The source comp is 14 frames at 25 fps.
-        return CatFrameSet(frames: frames, baseDuration: Double(frames.count) / 25.0)
+        // The source comp is 14 frames at the source animation's frame rate.
+        return CatFrameSet(
+            frames: frames,
+            baseDuration: Double(frames.count) / AppConfig.Animation.ruslanFramesPerSecond
+        )
     }
 
     private static func cgImage(from image: NSImage) -> CGImage? {

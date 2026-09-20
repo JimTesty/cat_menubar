@@ -52,7 +52,7 @@ On the first build, `vendor-assets.sh` downloads the pinned upstream Apache-2.0 
 
 ## Design choices
 
-**Low resident overhead.** The cat is animated by `CAKeyframeAnimation`; Swift does not wake for every frame. Only the animation speed changes when a new CPU sample arrives. Expensive-ish RAM/GPU sampling is disabled while the panel is closed.
+**Low resident overhead.** The cat is animated by `CAKeyframeAnimation`; Swift does not wake for every frame. Every source frame gets an equal interval, while the animation playback speed is retimed when a new smoothed CPU sample arrives. Expensive-ish RAM/GPU sampling is disabled while the panel is closed.
 
 **Observed baseline.** In the current local run, the app uses 25 MB of RAM and 0.0% CPU.
 

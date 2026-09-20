@@ -13,7 +13,8 @@ enum AppConfig {
         static let initialSpeed = 0.6
         static let minimumSpeed = 0.08
         static let maximumSpeed = 4.0
-        static let minimumMeaningfulSpeedChange = 0.03
+        static let classicFrameDuration: TimeInterval = 0.10
+        static let ruslanFramesPerSecond = 25.0
 
         static let idleLoadUpperBound = 0.05
         static let lowLoadUpperBound = 0.15

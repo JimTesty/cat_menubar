@@ -68,8 +68,7 @@ final class CatLayerView: NSView {
 
     func setCPUSpeed(_ speed: Double) {
         let clamped = Float(min(AppConfig.Animation.maximumSpeed, max(AppConfig.Animation.minimumSpeed, speed)))
-        // Small changes are visually meaningless and needlessly perturb Core Animation timing.
-        if abs(clamped - currentSpeed) < Float(AppConfig.Animation.minimumMeaningfulSpeedChange) { return }
+        guard clamped != currentSpeed else { return }
         setLayerSpeedPreservingPhase(clamped)
         currentSpeed = clamped
     }
@@ -111,7 +110,12 @@ final class CatLayerView: NSView {
 
         let animation = CAKeyframeAnimation(keyPath: "contents")
         animation.values = frames.map { $0 as Any }
-        animation.keyTimes = (0..<frames.count).map { NSNumber(value: Double($0) / Double(frames.count)) }
+        // One equal interval per source frame. Using frameCount as the divisor
+        // also gives the final frame a full interval before the loop repeats.
+        let equalFrameInterval = 1.0 / Double(frames.count)
+        animation.keyTimes = frames.indices.map {
+            NSNumber(value: Double($0) * equalFrameInterval)
+        }
         animation.calculationMode = .discrete
         animation.duration = baseDuration
         animation.repeatCount = .infinity
