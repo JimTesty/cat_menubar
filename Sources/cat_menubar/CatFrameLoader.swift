@@ -8,10 +8,10 @@ struct CatFrameSet {
 }
 
 enum CatFrameLoader {
-    static func loadClassic() -> CatFrameSet? {
+    static func loadKyome() -> CatFrameSet? {
         var frames = [CGImage]()
         for i in 0..<5 {
-            guard let url = ResourceLocator.url(relativePath: "classic/cat\(i).png"),
+            guard let url = ResourceLocator.url(relativePath: "kyome/cat\(i).png"),
                   let image = NSImage(contentsOf: url),
                   let cg = cgImage(from: image) else {
                 return nil
@@ -21,7 +21,7 @@ enum CatFrameLoader {
         }
         return CatFrameSet(
             frames: frames,
-            baseDuration: Double(frames.count) * AppConfig.Animation.classicFrameDuration
+            baseDuration: Double(frames.count) * AppConfig.Animation.kyomeFrameDuration
         )
     }
 

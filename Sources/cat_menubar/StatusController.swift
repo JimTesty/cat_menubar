@@ -7,7 +7,7 @@ final class StatusController: NSObject, NSPopoverDelegate {
     private let statsController = StatsViewController()
     private let sampler = SystemSampler()
     private let contextMenu = NSMenu()
-    private var classicItem: NSMenuItem!
+    private var kyomeItem: NSMenuItem!
     private var ruslanItem: NSMenuItem!
     private var smoothedCPU = ExponentialSmoother(
         timeConstant: AppConfig.Sampling.cpuDisplaySmoothingTimeConstant
@@ -68,13 +68,13 @@ final class StatusController: NSObject, NSPopoverDelegate {
     }
 
     private func setupMenu() {
-        classicItem = NSMenuItem(title: "Classic RunCat", action: #selector(selectClassic(_:)), keyEquivalent: "")
-        ruslanItem = NSMenuItem(title: "Ruslan outline", action: #selector(selectRuslan(_:)), keyEquivalent: "")
-        classicItem.target = self
+        kyomeItem = NSMenuItem(title: "Kyome22 RunCat", action: #selector(selectKyome(_:)), keyEquivalent: "")
+        ruslanItem = NSMenuItem(title: "Ruslan RunningCat", action: #selector(selectRuslan(_:)), keyEquivalent: "")
+        kyomeItem.target = self
         ruslanItem.target = self
-        classicItem.isEnabled = catView.availableStyles.contains(.classic)
+        kyomeItem.isEnabled = catView.availableStyles.contains(.kyome)
         ruslanItem.isEnabled = catView.availableStyles.contains(.ruslan)
-        contextMenu.addItem(classicItem)
+        contextMenu.addItem(kyomeItem)
         contextMenu.addItem(ruslanItem)
         contextMenu.addItem(.separator())
 
@@ -188,9 +188,9 @@ final class StatusController: NSObject, NSPopoverDelegate {
         sampler.setDetailed(false)
     }
 
-    @objc private func selectClassic(_ sender: Any?) {
-        catView.setStyle(.classic)
-        UserDefaults.standard.set(CatStyle.classic.rawValue, forKey: "CatStyle")
+    @objc private func selectKyome(_ sender: Any?) {
+        catView.setStyle(.kyome)
+        UserDefaults.standard.set(CatStyle.kyome.rawValue, forKey: "CatStyle")
         updateStyleChecks()
     }
 
@@ -201,14 +201,14 @@ final class StatusController: NSObject, NSPopoverDelegate {
     }
 
     private func updateStyleChecks() {
-        classicItem?.state = catView.style == .classic ? .on : .off
+        kyomeItem?.state = catView.style == .kyome ? .on : .off
         ruslanItem?.state = catView.style == .ruslan ? .on : .off
     }
 
     @objc private func showAbout(_ sender: Any?) {
         let alert = NSAlert()
         alert.messageText = "Cat Menu Bar"
-        alert.informativeText = "Native low-overhead CPU cat for macOS.\n\nClassic RunCat artwork: Takuto Nakamura (Kyome22), Apache-2.0.\nRuslan animation: RuslanDemyanov/RunningCat, Apache-2.0.\n\nSee THIRD_PARTY_NOTICES.md in the app Resources folder for details."
+        alert.informativeText = "Native low-overhead CPU cat for macOS.\n\nKyome22 RunCat artwork: Takuto Nakamura, Apache-2.0.\nRuslan RunningCat animation: RuslanDemyanov, Apache-2.0.\n\nSee THIRD_PARTY_NOTICES.md in the app Resources folder for details."
         alert.addButton(withTitle: "OK")
         NSApp.activate(ignoringOtherApps: true)
         alert.runModal()

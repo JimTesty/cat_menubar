@@ -8,7 +8,7 @@ APP="$PWD/build/$APP_NAME.app"
 BIN="$PWD/build/bin/$CODE_NAME"
 
 # Fetch the pinned Apache-2.0 animation assets only when they are absent.
-if [[ ! -s Resources/classic/cat0.png || ! -s Resources/ruslan/cat-walking.json ]]; then
+if [[ ! -s Resources/kyome/cat0.png || ! -s Resources/ruslan/cat-walking.json ]]; then
   ./vendor-assets.sh
 fi
 
@@ -39,7 +39,7 @@ swiftc "${SWIFTC_ARGS[@]}" Sources/cat_menubar/*.swift
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/$CODE_NAME"
-cp -R Resources/classic "$APP/Contents/Resources/"
+cp -R Resources/kyome "$APP/Contents/Resources/"
 cp -R Resources/ruslan "$APP/Contents/Resources/"
 cp LICENSE "$APP/Contents/Resources/LICENSE"
 cp THIRD_PARTY_NOTICES.md "$APP/Contents/Resources/THIRD_PARTY_NOTICES.md"

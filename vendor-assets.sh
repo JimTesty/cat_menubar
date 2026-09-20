@@ -4,7 +4,7 @@ cd "$(dirname "$0")"
 
 KYOME_REV="82747b139cc32e13a7b713f8521f44c70317f7d4"
 RUSLAN_REV="e33ca7868092bed8b0f2034815845c52f96aeca2"
-CLASSIC_BLOBS=(
+KYOME_BLOBS=(
   "215665a15044180c95d4032d137bbd5c8a22eaec"
   "a9671cfcaef814cf8184595902337ae95ccc0a2d"
   "d0ecaeb8fc94fc9c87858523af43a92b34e2e5a9"
@@ -29,16 +29,16 @@ verify_blob() {
   fi
 }
 
-mkdir -p Resources/classic Resources/ruslan
+mkdir -p Resources/kyome Resources/ruslan
 
 for n in 0 1 2 3 4; do
-  dst="Resources/classic/cat${n}.png"
+  dst="Resources/kyome/cat${n}.png"
   if [[ ! -s "$dst" ]]; then
-    echo "Fetching classic RunCat frame ${n}..."
+    echo "Fetching Kyome22 RunCat frame ${n}..."
     url="https://raw.githubusercontent.com/Kyome22/menubar_runcat/${KYOME_REV}/Menubar%20RunCat/Assets.xcassets/cat_page${n}.imageset/cat${n}.png"
     curl -fL --retry 3 --connect-timeout 15 "$url" -o "$dst"
   fi
-  verify_blob "$dst" "${CLASSIC_BLOBS[$n]}"
+  verify_blob "$dst" "${KYOME_BLOBS[$n]}"
 done
 
 ruslan_url="https://raw.githubusercontent.com/RuslanDemyanov/RunningCat/${RUSLAN_REV}/Sources/RunningCatMenuBar/Resources/cat%20walking.json"

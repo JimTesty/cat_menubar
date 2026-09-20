@@ -4,7 +4,7 @@ import QuartzCore
 final class CatLayerView: NSView {
     private let frameLayer = CALayer()
     private var frameSets: [CatStyle: CatFrameSet] = [:]
-    private var currentStyle: CatStyle = .classic
+    private var currentStyle: CatStyle = .kyome
     private var currentSpeed: Float = Float(AppConfig.Animation.initialSpeed)
     private var currentSourceFrames: [CGImage] = []
     private var baseDuration: CFTimeInterval = 0.5
@@ -18,10 +18,10 @@ final class CatLayerView: NSView {
         frameLayer.minificationFilter = .trilinear
         layer?.addSublayer(frameLayer)
 
-        if let classic = CatFrameLoader.loadClassic() { frameSets[.classic] = classic }
+        if let kyome = CatFrameLoader.loadKyome() { frameSets[.kyome] = kyome }
         if let ruslan = CatFrameLoader.loadRuslan() { frameSets[.ruslan] = ruslan }
 
-        if frameSets[.classic] == nil, frameSets[.ruslan] != nil { currentStyle = .ruslan }
+        if frameSets[.kyome] == nil, frameSets[.ruslan] != nil { currentStyle = .ruslan }
         installCurrentStyle()
     }
 

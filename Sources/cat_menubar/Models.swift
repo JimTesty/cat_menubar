@@ -47,6 +47,6 @@ struct SystemSnapshot {
 }
 
 enum CatStyle: String, Hashable {
-    case classic
+    case kyome
     case ruslan
 }

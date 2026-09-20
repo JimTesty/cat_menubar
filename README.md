@@ -6,8 +6,8 @@ Cat Menu Bar targets macOS 11 Big Sur and later. It is written in Swift with
 AppKit, QuartzCore, Mach, and IOKit, with no third-party runtime dependencies.
 
 <p>
-<img src="docs/images/screenshot-runcat-dark.png" alt="Cat Menu Bar using the RunCat-style cat" />
-<img src="docs/images/screenshot-ruslan-dark.png" alt="Cat Menu Bar using the Ruslan-style cat" />
+<img src="docs/images/screenshot-runcat-dark.png" alt="Cat Menu Bar using Kyome22 RunCat" />
+<img src="docs/images/screenshot-ruslan-dark.png" alt="Cat Menu Bar using Ruslan RunningCat" />
 </p>
 
 ## Features
@@ -15,8 +15,8 @@ AppKit, QuartzCore, Mach, and IOKit, with no third-party runtime dependencies.
 - Running cat in the menu bar; animation speed tracks total CPU load.
 - Compact scrolling CPU/GPU history graph with a bounded 60-second window.
 - Two animation styles:
-  - **Classic [RunCat](https://github.com/Kyome22/menubar_runcat)**, the original five-frame art by Takuto Nakamura (Kyome22).
-  - **Ruslan outline**, from [RuslanDemyanov/RunningCat](https://github.com/RuslanDemyanov/RunningCat)'s `cat walking.json`, rendered by a small built-in subset renderer instead of shipping Lottie.
+  - **Kyome22's original [RunCat](https://github.com/Kyome22/menubar_runcat)**, the original five-frame art by Takuto Nakamura.
+  - **RuslanDemyanov's [RunningCat](https://github.com/RuslanDemyanov/RunningCat)**, `cat walking.json` rendered by a small built-in subset renderer instead of shipping Lottie.
 - Left-click: live panel with total CPU, every logical core, memory pressure, RAM/compression/swap, and best-effort Apple Silicon GPU usage.
 - Right-click: choose cat style, About, or Quit.
 - Stops sampling/animation across system sleep and resumes on wake.

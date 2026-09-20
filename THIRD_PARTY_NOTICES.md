@@ -8,18 +8,18 @@ also copied into the built app bundle.
 The upstream revisions below are pinned in `vendor-assets.sh`; that script
 also verifies the Git blob IDs of the checked-in assets.
 
-## Bundled assets: Menubar RunCat / RunCat
+## Bundled asset: Kyome22 RunCat
 
 - Author: Takuto Nakamura (Kyome22)
 - Repository: https://github.com/Kyome22/menubar_runcat
 - Pinned revision: [`82747b139cc32e13a7b713f8521f44c70317f7d4`](https://github.com/Kyome22/menubar_runcat/tree/82747b139cc32e13a7b713f8521f44c70317f7d4)
 - License: Apache License 2.0
-- Bundled files: `Resources/classic/cat0.png` through `Resources/classic/cat4.png`
+- Bundled files: `Resources/kyome/cat0.png` through `Resources/kyome/cat4.png`
 - Upstream source path: `Menubar RunCat/Assets.xcassets/cat_page0.imageset/` through `cat_page4.imageset/`
 
 The five-frame artwork is redistributed under the upstream license.
 
-## Bundled asset: RunningCat
+## Bundled asset: Ruslan RunningCat
 
 - Author/project owner: RuslanDemyanov
 - Repository: https://github.com/RuslanDemyanov/RunningCat
