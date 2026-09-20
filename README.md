@@ -13,9 +13,10 @@ AppKit, QuartzCore, Mach, and IOKit, with no third-party runtime dependencies.
 ## Features
 
 - Running cat in the menu bar; animation speed tracks total CPU load.
+- Compact scrolling CPU/GPU history graph with a bounded 60-second window.
 - Two animation styles:
-  - **Classic RunCat**, the original five-frame art by Takuto Nakamura (Kyome22).
-  - **Ruslan outline**, from RuslanDemyanov/RunningCat's `cat walking.json`, rendered by a small built-in subset renderer instead of shipping Lottie.
+  - **Classic [RunCat](https://github.com/Kyome22/menubar_runcat)**, the original five-frame art by Takuto Nakamura (Kyome22).
+  - **Ruslan outline**, from [RuslanDemyanov/RunningCat](https://github.com/RuslanDemyanov/RunningCat)'s `cat walking.json`, rendered by a small built-in subset renderer instead of shipping Lottie.
 - Left-click: live panel with total CPU, every logical core, memory pressure, RAM/compression/swap, and best-effort Apple Silicon GPU usage.
 - Right-click: choose cat style, About, or Quit.
 - Stops sampling/animation across system sleep and resumes on wake.
@@ -57,6 +58,7 @@ project description, but `build-app.sh` does not depend on `swift build`.
 - `AppConfig.swift` — central tuning values for sampling, smoothing, animation speed, and UI layout.
 - `ExponentialSmoother.swift` — time-aware exponential smoothing for displayed CPU and cat speed.
 - `StatusController.swift` — owns the status item, popover, context menu, sleep/wake behavior, selected cat style, and CPU-to-speed mapping.
+- `HistoryGraphView.swift` — draws the bounded CPU/GPU history graph with adaptive colors and reference guides.
 - `CatLayerView.swift` — menu-bar renderer; animates cached `CGImage` frames with Core Animation.
 - `CatFrameLoader.swift` — loads/rasterizes both cat animation families.
 - `MiniLottieRenderer.swift` — intentionally tiny renderer for only the vector/keyframe features used by Ruslan's bundled Lottie JSON.
@@ -110,4 +112,4 @@ GitHub when they are not already present.
 
 ## Licenses / attribution
 
-See `THIRD_PARTY_NOTICES.md` and `LICENSE`. The borrowed RunCat/RunningCat material is Apache-2.0 and pinned to specific upstream revisions.
+See `THIRD_PARTY_NOTICES.md` and `LICENSE`. The borrowed [RunCat](https://github.com/Kyome22/menubar_runcat) and [RunningCat](https://github.com/RuslanDemyanov/RunningCat) material is Apache-2.0 and pinned to specific upstream revisions.

@@ -4,6 +4,7 @@ enum AppConfig {
     enum Sampling {
         static let normalInterval: DispatchTimeInterval = .seconds(1)
         static let detailedInterval: DispatchTimeInterval = .milliseconds(500)
+        static let backgroundGPUInterval: TimeInterval = 1
         static let timerLeeway: DispatchTimeInterval = .milliseconds(80)
         static let cpuDisplaySmoothingTimeConstant: TimeInterval = 1.5
         static let animationSpeedSmoothingTimeConstant: TimeInterval = 0.8
@@ -47,13 +48,15 @@ enum AppConfig {
     }
 
     enum Popover {
-        static let size = CGSize(width: 370, height: 420)
+        static let size = CGSize(width: 370, height: 382)
         static let horizontalInset: CGFloat = 16
         static let topInset: CGFloat = 14
         static let bottomInset: CGFloat = 12
         static let stackSpacing: CGFloat = 7
         static let coreBarsHeight: CGFloat = 104
         static let coreRowHeight: CGFloat = 24
+        static let cpuLabelAreaHeight: CGFloat = 30
+        static let cpuToCoresSpacing: CGFloat = 8
     }
 
     enum CoreBars {
@@ -69,6 +72,14 @@ enum AppConfig {
         static let textBottomInset: CGFloat = 4
         static let minimumBarWidth: CGFloat = 12
         static let minimumVisibleBarWidth: CGFloat = 0.5
+    }
+
+    enum History {
+        static let duration: TimeInterval = 60
+        static let maximumGap: TimeInterval = 3
+        static let graphHeight: CGFloat = 52
+        static let lineWidth: CGFloat = 1.5
+        static let cpuLineWidth: CGFloat = 1.8
     }
 
     enum Typography {

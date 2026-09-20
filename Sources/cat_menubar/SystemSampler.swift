@@ -10,6 +10,8 @@ final class SystemSampler {
     private var timer: DispatchSourceTimer?
     private var detailed = false
     private var running = false
+    private var lastGPUSnapshot = GPUSnapshot.unavailable
+    private var lastGPUSampleAt = -Double.greatestFiniteMagnitude
 
     func start() {
         queue.async { [weak self] in
@@ -30,6 +32,8 @@ final class SystemSampler {
             self.timer = nil
             self.memory.stop()
             self.cpu.reset()
+            self.lastGPUSnapshot = .unavailable
+            self.lastGPUSampleAt = -Double.greatestFiniteMagnitude
         }
     }
 
@@ -58,15 +62,21 @@ final class SystemSampler {
         guard running else { return }
 
         let cpuSnapshot = cpu.sample()
+        let now = ProcessInfo.processInfo.systemUptime
+        if detailed || now - lastGPUSampleAt >= AppConfig.Sampling.backgroundGPUInterval {
+            lastGPUSnapshot = gpu.sample()
+            lastGPUSampleAt = now
+        }
+
         let snapshot: SystemSnapshot
         if detailed {
             snapshot = SystemSnapshot(
                 cpu: cpuSnapshot,
                 memory: memory.sample(),
-                gpu: gpu.sample()
+                gpu: lastGPUSnapshot
             )
         } else {
-            snapshot = SystemSnapshot(cpu: cpuSnapshot, memory: nil, gpu: nil)
+            snapshot = SystemSnapshot(cpu: cpuSnapshot, memory: nil, gpu: lastGPUSnapshot)
         }
 
         DispatchQueue.main.async { [weak self] in

@@ -12,6 +12,9 @@ final class StatusController: NSObject, NSPopoverDelegate {
     private var smoothedCPU = ExponentialSmoother(
         timeConstant: AppConfig.Sampling.cpuDisplaySmoothingTimeConstant
     )
+    private var smoothedGPU = ExponentialSmoother(
+        timeConstant: AppConfig.Sampling.cpuDisplaySmoothingTimeConstant
+    )
     private var smoothedSpeed = ExponentialSmoother(
         timeConstant: AppConfig.Sampling.animationSpeedSmoothingTimeConstant,
         initialValue: AppConfig.Animation.initialSpeed
@@ -89,11 +92,32 @@ final class StatusController: NSObject, NSPopoverDelegate {
         sampler.onSnapshot = { [weak self] snapshot in
             guard let self = self else { return }
             let timestamp = ProcessInfo.processInfo.systemUptime
-            let displayCPU = self.smoothedCPU.update(snapshot.cpu.total, at: timestamp)
+            let displayCPU: Double
+            if snapshot.cpu.total.isFinite {
+                displayCPU = self.smoothedCPU.update(snapshot.cpu.total, at: timestamp)
+            } else {
+                self.smoothedCPU.reset()
+                displayCPU = snapshot.cpu.total
+            }
             var displayedSnapshot = snapshot
             displayedSnapshot.cpu.total = displayCPU
-            self.updateCat(cpu: displayCPU, at: timestamp)
-            self.statusItem.button?.toolTip = String(format: "CPU %.1f%%", displayCPU * 100)
+            if var gpu = displayedSnapshot.gpu, let utilization = gpu.utilization {
+                if utilization.isFinite {
+                    gpu.utilization = self.smoothedGPU.update(utilization, at: timestamp)
+                } else {
+                    self.smoothedGPU.reset()
+                }
+                displayedSnapshot.gpu = gpu
+            } else {
+                self.smoothedGPU.reset()
+            }
+            if displayCPU.isFinite {
+                self.updateCat(cpu: displayCPU, at: timestamp)
+                self.statusItem.button?.toolTip = String(format: "CPU %.1f%%", displayCPU * 100)
+            } else {
+                self.statusItem.button?.toolTip = "CPU invalid sample"
+            }
+            self.statsController.recordHistory(displayedSnapshot, at: timestamp)
             if self.popover.isShown { self.statsController.update(displayedSnapshot) }
         }
     }

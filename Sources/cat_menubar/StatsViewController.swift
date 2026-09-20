@@ -2,6 +2,7 @@ import AppKit
 
 final class StatsViewController: NSViewController {
     private let cpuLabel = NSTextField(labelWithString: "CPU  --")
+    private let historyGraph = HistoryGraphView(frame: .zero)
     private let coreBars = CoreBarsView(frame: .zero)
     private let gpuLabel = NSTextField(labelWithString: "GPU  N/A")
     private let memoryPressureLabel = NSTextField(labelWithString: "Pressure  --")
@@ -16,6 +17,22 @@ final class StatsViewController: NSViewController {
 
         cpuLabel.font = NSFont.monospacedDigitSystemFont(ofSize: AppConfig.Typography.cpuSize, weight: .semibold)
         cpuLabel.textColor = .labelColor
+
+        let cpuHeader = NSView()
+        cpuHeader.translatesAutoresizingMaskIntoConstraints = false
+        cpuHeader.addSubview(cpuLabel)
+        cpuHeader.addSubview(historyGraph)
+        cpuLabel.translatesAutoresizingMaskIntoConstraints = false
+        historyGraph.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            cpuHeader.heightAnchor.constraint(equalToConstant: AppConfig.History.graphHeight),
+            cpuLabel.leadingAnchor.constraint(equalTo: cpuHeader.leadingAnchor),
+            cpuLabel.topAnchor.constraint(equalTo: cpuHeader.topAnchor),
+            historyGraph.leadingAnchor.constraint(equalTo: cpuLabel.trailingAnchor, constant: 8),
+            historyGraph.trailingAnchor.constraint(equalTo: cpuHeader.trailingAnchor),
+            historyGraph.topAnchor.constraint(equalTo: cpuHeader.topAnchor),
+            historyGraph.bottomAnchor.constraint(equalTo: cpuHeader.bottomAnchor)
+        ])
 
         let coresTitle = sectionLabel("Logical cores")
         let gpuTitle = sectionLabel("GPU")
@@ -35,7 +52,7 @@ final class StatsViewController: NSViewController {
         let divider2 = divider()
 
         let stack = NSStackView(views: [
-            cpuLabel,
+            cpuHeader,
             coresTitle,
             coreBars,
             divider1,
@@ -52,6 +69,12 @@ final class StatsViewController: NSViewController {
         stack.orientation = .vertical
         stack.alignment = .leading
         stack.spacing = AppConfig.Popover.stackSpacing
+        stack.setCustomSpacing(
+            AppConfig.Popover.cpuLabelAreaHeight
+                + AppConfig.Popover.cpuToCoresSpacing
+                - AppConfig.History.graphHeight,
+            after: cpuHeader
+        )
         stack.translatesAutoresizingMaskIntoConstraints = false
         root.addSubview(stack)
 
@@ -59,7 +82,7 @@ final class StatsViewController: NSViewController {
         coreHeightConstraint = coreBars.heightAnchor.constraint(equalToConstant: AppConfig.Popover.coreBarsHeight)
         coreHeightConstraint?.isActive = true
 
-        for item in [coreBars, divider1, divider2, gpuNote] {
+        for item in [cpuHeader, coreBars, divider1, divider2, gpuNote] {
             item.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
         }
 
@@ -69,6 +92,10 @@ final class StatsViewController: NSViewController {
             stack.topAnchor.constraint(equalTo: root.topAnchor, constant: AppConfig.Popover.topInset),
             stack.bottomAnchor.constraint(lessThanOrEqualTo: root.bottomAnchor, constant: -AppConfig.Popover.bottomInset)
         ])
+    }
+
+    func recordHistory(_ snapshot: SystemSnapshot, at timestamp: TimeInterval) {
+        historyGraph.append(cpu: snapshot.cpu.total, gpu: snapshot.gpu?.utilization, at: timestamp)
     }
 
     func update(_ snapshot: SystemSnapshot) {

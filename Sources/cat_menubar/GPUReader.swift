@@ -36,7 +36,9 @@ final class GPUReader {
         let utilization: Double?
         if let number = (dictionary["Device Utilization %"] as? NSNumber)
             ?? (dictionary["Renderer Utilization %"] as? NSNumber) {
-            utilization = min(1, max(0, number.doubleValue / 100.0))
+            // Preserve the driver value. Out-of-range values are useful diagnostics
+            // and should remain visible in the graph rather than being hidden.
+            utilization = number.doubleValue / 100.0
         } else {
             utilization = nil
         }
