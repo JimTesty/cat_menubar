@@ -1,6 +1,6 @@
 # Validation status
 
-Validated in the generation environment:
+Validated by static checks in this checkout:
 
 - every Swift source file passes `swiftc -frontend -parse`;
 - `Package.swift` is syntactically valid;
@@ -9,8 +9,8 @@ Validated in the generation environment:
 - the Ruslan animation was inspected programmatically: its inner cat composition has 9 vector shape layers, only `sh`, `st`, `fl`, and `tr` shape operators, no images/text/masks/effects, two animated shape paths, and a 14-frame inner cycle at 25 fps; the subset renderer covers those features;
 - borrowed assets are pinned to exact upstream revisions and `vendor-assets.sh` verifies Git blob IDs when `git` is available.
 
-Not validated here:
+Not covered by these static checks:
 
-- full compile/link against the macOS 11 SDK, because this environment is Linux and has no AppKit/macOS SDK;
-- runtime CPU/RAM measurements on an M1 Big Sur machine;
-- whether every Big Sur M1 AGX driver exposes `Device Utilization %`; GPU reporting therefore degrades to `N/A`.
+- full compile/link against the macOS 11 SDK;
+- runtime CPU/RAM measurements on supported Apple Silicon hardware;
+- whether every supported AGX driver exposes `Device Utilization %`; GPU reporting therefore degrades to `N/A` when unavailable.

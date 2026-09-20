@@ -1,11 +1,9 @@
 # Cat Menu Bar
 
-**Code name:** `cat_menubar`
+A small native macOS menu-bar monitor whose running-cat speed follows total CPU load.
 
-A tiny native macOS menu-bar monitor whose running-cat speed follows total CPU load.
-
-**Target:** macOS 11 Big Sur, especially Apple Silicon M1.  
-**Runtime stack:** Swift + AppKit + QuartzCore + Mach + IOKit. No third-party runtime dependencies.
+Cat Menu Bar targets macOS 11 Big Sur and later. It is written in Swift with
+AppKit, QuartzCore, Mach, and IOKit, with no third-party runtime dependencies.
 
 ## Features
 
@@ -17,18 +15,35 @@ A tiny native macOS menu-bar monitor whose running-cat speed follows total CPU l
 - Right-click: choose cat style, About, or Quit.
 - Stops sampling/animation across system sleep and resumes on wake.
 
-## Build
+## Download and run
 
-The normal build uses **`swiftc` directly**, not Xcode projects or XCTest:
+Download the macOS archive from the project's GitHub Releases page, unzip it,
+and open `Cat Menu Bar.app`. Release builds are ad-hoc signed rather than
+Apple-notarized, so macOS may ask you to confirm the first launch with
+Control-click > Open.
+
+Release archives are architecture-specific: an `arm64` build is for Apple
+Silicon, while an `x86_64` build is for Intel Macs.
+
+## Build from source
+
+The normal build uses `swiftc` directly:
 
 ```bash
 ./build-app.sh
 open "build/Cat Menu Bar.app"
 ```
 
-Required: `swiftc` plus a macOS SDK usable by that compiler. The script uses `xcrun --sdk macosx --show-sdk-path` when `xcrun` exists, otherwise it lets `swiftc` use its configured default SDK. `codesign` is optional and used only for an ad-hoc local signature. `actool` and `xctest` are not required.
+You need a macOS Swift compiler and a macOS SDK supported by that compiler.
+The script uses `xcrun --sdk macosx --show-sdk-path` when available and falls
+back to the compiler's configured SDK. It builds for the current Mac
+architecture. `codesign` is optional and is used only for an ad-hoc local
+signature.
 
-On the first build, `vendor-assets.sh` downloads the pinned upstream Apache-2.0 animation assets if `Resources/` is absent. Later builds reuse them. `Package.swift` is retained as an optional SwiftPM project description, but `build-app.sh` does not depend on `swift build`.
+On the first build, `vendor-assets.sh` downloads the pinned upstream Apache-2.0
+animation assets if either asset is absent. Later builds reuse the checked-in
+assets. `Package.swift` is retained as an optional Swift Package Manager
+project description, but `build-app.sh` does not depend on `swift build`.
 
 ## Source structure
 
@@ -54,8 +69,6 @@ On the first build, `vendor-assets.sh` downloads the pinned upstream Apache-2.0 
 
 **Low resident overhead.** The cat is animated by `CAKeyframeAnimation`; Swift does not wake for every frame. Every source frame gets an equal interval, while the animation playback speed is retimed when a new smoothed CPU sample arrives. Expensive-ish RAM/GPU sampling is disabled while the panel is closed.
 
-**Observed baseline.** In the current local run, the app uses 25 MB of RAM and 0.0% CPU.
-
 **Native APIs, no helper processes.** CPU/RAM use Mach APIs. GPU uses IOKit directly rather than periodically spawning `ioreg` or `powermetrics`. The app has no Electron/WebView, Python process, Lottie framework, or other runtime dependency.
 
 **Logical-core truth over guessed topology.** Per-core bars report what Mach exposes. The app does not guess M1 P-core/E-core identity from ordering unless a reliable API is added later.
@@ -70,8 +83,6 @@ On the first build, `vendor-assets.sh` downloads the pinned upstream Apache-2.0 
 - **Ruslan renderer is deliberately incomplete.** It handles this animation, not arbitrary Lottie files; easing is simplified and decorative speed-line layers are omitted.
 - **No historical graphs yet.** Metrics are current snapshots only.
 - **No P/E-core labels yet.** Bars are logical CPUs in Mach's order.
-- **No test suite requiring XCTest.** The project currently favors tiny build dependencies; metric parsers/math could later gain standalone unit tests that do not require `xctest`, or XCTest could remain optional.
-- **Big Sur runtime still needs your real-machine test.** This environment cannot link against Apple's macOS 11 SDK or exercise M1 AGX counters.
 
 ## Plausible future features
 
@@ -84,6 +95,13 @@ On the first build, `vendor-assets.sh` downloads the pinned upstream Apache-2.0 
 - Custom runner/frame-set import.
 - Better Ruslan animation fidelity, or offline pre-rasterization to remove the subset renderer from the runtime entirely.
 - Self-monitoring/debug panel showing Cat Menu Bar's own CPU, wakeups, and resident memory.
+
+## Privacy
+
+At runtime the app reads local system counters through Mach and IOKit. It does
+not collect analytics, contact a service, or send system metrics over the
+network. The build helper may download the pinned animation assets from
+GitHub when they are not already present.
 
 ## Licenses / attribution
 
