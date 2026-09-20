@@ -41,6 +41,7 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/$CODE_NAME"
 cp -R Resources/kyome "$APP/Contents/Resources/"
 cp -R Resources/ruslan "$APP/Contents/Resources/"
+cp Resources/AppIcon.icns "$APP/Contents/Resources/"
 cp LICENSE "$APP/Contents/Resources/LICENSE"
 cp THIRD_PARTY_NOTICES.md "$APP/Contents/Resources/THIRD_PARTY_NOTICES.md"
 
@@ -52,6 +53,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <key>CFBundleDevelopmentRegion</key><string>en</string>
   <key>CFBundleExecutable</key><string>cat_menubar</string>
   <key>CFBundleIdentifier</key><string>local.cat-menubar</string>
+  <key>CFBundleIconFile</key><string>AppIcon.icns</string>
   <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
   <key>CFBundleName</key><string>Cat Menu Bar</string>
   <key>CFBundleDisplayName</key><string>Cat Menu Bar</string>
@@ -67,6 +69,10 @@ PLIST
 
 # Optional ad-hoc signature. No developer certificate is needed.
 if command -v codesign >/dev/null 2>&1; then
+  # Finder/Preview metadata on copied assets is not allowed in a signed bundle.
+  if command -v xattr >/dev/null 2>&1; then
+    xattr -cr "$APP"
+  fi
   codesign --force --sign - "$APP"
 fi
 
