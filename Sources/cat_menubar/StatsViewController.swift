@@ -99,19 +99,22 @@ final class StatsViewController: NSViewController {
     }
 
     func update(_ snapshot: SystemSnapshot) {
-        cpuLabel.stringValue = String(format: "CPU  %5.1f%%", snapshot.cpu.total * 100)
+        cpuLabel.stringValue = "CPU\(percentField(snapshot.cpu.total * 100))%"
         coreBars.values = snapshot.cpu.cores
         let rows = Int(ceil(Double(max(1, snapshot.cpu.cores.count)) / Double(snapshot.cpu.cores.count > 4 ? 2 : 1)))
         coreHeightConstraint?.constant = CGFloat(rows) * AppConfig.Popover.coreRowHeight
 
         if let gpu = snapshot.gpu, let value = gpu.utilization {
             if let mapped = gpu.inUseSystemMemoryBytes {
-                gpuLabel.stringValue = String(format: "GPU  %5.1f%%  ·  mapped %.2f GiB", value * 100, gib(mapped))
+                gpuLabel.stringValue = String(
+                    format: "GPU%@%%  ·  mapped %.2f GiB",
+                    percentField(value * 100), gib(mapped)
+                )
             } else {
-                gpuLabel.stringValue = String(format: "GPU  %5.1f%%", value * 100)
+                gpuLabel.stringValue = "GPU\(percentField(value * 100))%"
             }
         } else {
-            gpuLabel.stringValue = "GPU  N/A"
+            gpuLabel.stringValue = "GPU N/A"
         }
 
         if let memory = snapshot.memory, memory.totalBytes > 0 {
@@ -152,6 +155,12 @@ final class StatsViewController: NSViewController {
 
     private func gib(_ bytes: UInt64) -> Double {
         Double(bytes) / 1_073_741_824.0
+    }
+
+    private func percentField(_ value: Double) -> String {
+        // This FIGURE SPACE (U+2007) hack is for making the padding space as wide as a digit
+        String(format: "%5.1f", value)
+            .replacingOccurrences(of: " ", with: "\u{2007}")
     }
 
     private func swapTextWithDisk(_ swapText: String, memory: MemorySnapshot) -> String {
