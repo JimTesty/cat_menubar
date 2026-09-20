@@ -110,11 +110,11 @@ final class CatLayerView: NSView {
 
         let animation = CAKeyframeAnimation(keyPath: "contents")
         animation.values = frames.map { $0 as Any }
-        // One equal interval per source frame. Using frameCount as the divisor
-        // also gives the final frame a full interval before the loop repeats.
-        let equalFrameInterval = 1.0 / Double(frames.count)
-        animation.keyTimes = frames.indices.map {
-            NSNumber(value: Double($0) * equalFrameInterval)
+        // Discrete keyframes need one terminal key time beyond the values.
+        // The terminal 1.0 makes each source frame occupy one equal interval.
+        let frameCount = Double(frames.count)
+        animation.keyTimes = (0...frames.count).map {
+            NSNumber(value: Double($0) / frameCount)
         }
         animation.calculationMode = .discrete
         animation.duration = baseDuration
