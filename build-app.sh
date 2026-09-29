@@ -13,6 +13,7 @@ if [[ ! -s Resources/kyome/cat0.png || ! -s Resources/ruslan/cat-walking.json ]]
 fi
 
 mkdir -p "$PWD/build/bin"
+# Re-link from scratch so no previous executable signature is reused.
 rm -f "$BIN"
 
 # Compile directly with swiftc. xcrun is useful for locating the macOS SDK, but
@@ -36,6 +37,7 @@ fi
 
 swiftc "${SWIFTC_ARGS[@]}" Sources/cat_menubar/*.swift
 
+# Recreate the bundle so old signature and resource-seal data cannot remain.
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/$CODE_NAME"
