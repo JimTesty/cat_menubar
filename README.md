@@ -18,7 +18,7 @@ AppKit, QuartzCore, Mach, and IOKit, with no third-party runtime dependencies.
   - **Kyome22's original [RunCat](https://github.com/Kyome22/menubar_runcat)**, the original five-frame art by Takuto Nakamura.
   - **RuslanDemyanov's [RunningCat](https://github.com/RuslanDemyanov/RunningCat)**, `cat walking.json` rendered by a small built-in subset renderer instead of shipping Lottie.
 - Left-click: live panel with total CPU, every logical core, memory pressure, RAM/compression/swap, and best-effort Apple Silicon GPU usage.
-- Right-click: choose cat style, About, or Quit.
+- Right-click: choose cat style, toggle **Facing left** (off by default and remembered across launches), About, or Quit.
 - Stops sampling/animation across system sleep and resumes on wake.
 
 ## Download and run

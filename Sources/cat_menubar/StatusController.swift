@@ -9,6 +9,7 @@ final class StatusController: NSObject, NSPopoverDelegate {
     private let contextMenu = NSMenu()
     private var kyomeItem: NSMenuItem!
     private var ruslanItem: NSMenuItem!
+    private var facingLeftItem: NSMenuItem!
     private var smoothedCPU = ExponentialSmoother(
         timeConstant: AppConfig.Sampling.cpuDisplaySmoothingTimeConstant
     )
@@ -32,6 +33,7 @@ final class StatusController: NSObject, NSPopoverDelegate {
            catView.availableStyles.contains(style) {
             catView.setStyle(style)
         }
+        catView.setFacingLeft(UserDefaults.standard.bool(forKey: "FacingLeft"))
         setupMenu()
         setupSampler()
         setupSleepWake()
@@ -76,6 +78,10 @@ final class StatusController: NSObject, NSPopoverDelegate {
         ruslanItem.isEnabled = catView.availableStyles.contains(.ruslan)
         contextMenu.addItem(kyomeItem)
         contextMenu.addItem(ruslanItem)
+
+        facingLeftItem = NSMenuItem(title: "Facing left", action: #selector(toggleFacingLeft(_:)), keyEquivalent: "")
+        facingLeftItem.target = self
+        contextMenu.addItem(facingLeftItem)
         contextMenu.addItem(.separator())
 
         let about = NSMenuItem(title: "About Cat Menu Bar", action: #selector(showAbout(_:)), keyEquivalent: "")
@@ -85,7 +91,7 @@ final class StatusController: NSObject, NSPopoverDelegate {
         let quit = NSMenuItem(title: "Quit Cat Menu Bar", action: #selector(quit(_:)), keyEquivalent: "q")
         quit.target = self
         contextMenu.addItem(quit)
-        updateStyleChecks()
+        updateMenuChecks()
     }
 
     private func setupSampler() {
@@ -191,18 +197,25 @@ final class StatusController: NSObject, NSPopoverDelegate {
     @objc private func selectKyome(_ sender: Any?) {
         catView.setStyle(.kyome)
         UserDefaults.standard.set(CatStyle.kyome.rawValue, forKey: "CatStyle")
-        updateStyleChecks()
+        updateMenuChecks()
     }
 
     @objc private func selectRuslan(_ sender: Any?) {
         catView.setStyle(.ruslan)
         UserDefaults.standard.set(CatStyle.ruslan.rawValue, forKey: "CatStyle")
-        updateStyleChecks()
+        updateMenuChecks()
     }
 
-    private func updateStyleChecks() {
+    @objc private func toggleFacingLeft(_ sender: Any?) {
+        catView.setFacingLeft(!catView.isFacingLeft)
+        UserDefaults.standard.set(catView.isFacingLeft, forKey: "FacingLeft")
+        updateMenuChecks()
+    }
+
+    private func updateMenuChecks() {
         kyomeItem?.state = catView.style == .kyome ? .on : .off
         ruslanItem?.state = catView.style == .ruslan ? .on : .off
+        facingLeftItem?.state = catView.isFacingLeft ? .on : .off
     }
 
     @objc private func showAbout(_ sender: Any?) {

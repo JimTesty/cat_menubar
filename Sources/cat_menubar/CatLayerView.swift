@@ -8,6 +8,7 @@ final class CatLayerView: NSView {
     private var currentSpeed: Float = Float(AppConfig.Animation.initialSpeed)
     private var currentSourceFrames: [CGImage] = []
     private var baseDuration: CFTimeInterval = 0.5
+    private(set) var isFacingLeft = false
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -38,7 +39,9 @@ final class CatLayerView: NSView {
         super.layout()
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        frameLayer.frame = bounds
+        // Set geometry without relying on frame while the layer is mirrored.
+        frameLayer.bounds = CGRect(origin: .zero, size: bounds.size)
+        frameLayer.position = CGPoint(x: bounds.midX, y: bounds.midY)
         CATransaction.commit()
     }
 
@@ -64,6 +67,15 @@ final class CatLayerView: NSView {
         guard frameSets[style] != nil, style != currentStyle else { return }
         currentStyle = style
         installCurrentStyle()
+    }
+
+    func setFacingLeft(_ facingLeft: Bool) {
+        guard facingLeft != isFacingLeft else { return }
+        isFacingLeft = facingLeft
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        frameLayer.transform = CATransform3DMakeScale(facingLeft ? -1 : 1, 1, 1)
+        CATransaction.commit()
     }
 
     func setCPUSpeed(_ speed: Double) {
