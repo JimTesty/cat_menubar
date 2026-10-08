@@ -39,7 +39,20 @@ The normal build uses `swiftc` directly:
 ./build-app.sh
 ```
 
-The script restarts the app only if it was already running; otherwise use `open "build/Cat Menu Bar.app"`.
+The script prepares and signs a fresh bundle before replacing the existing app,
+so failed builds preserve the previous bundle. It refreshes the installed
+bundle's Launch Services registration before reopening it. This does not add
+boot or login startup.
+
+A running app receives SIGTERM through its normal Quit path and is relaunched
+only after it exits. A shutdown timeout is reported explicitly and preserves
+the existing bundle. Otherwise, use `open "build/Cat Menu Bar.app"`.
+Use `./build-app.sh --no-restart` to build and install without stopping or
+launching the app.
+
+Run `bash Tests/BuildScriptChecks.sh` for isolated checks covering failed builds,
+replacement rollback, registration before launch, missing animation frames,
+restart, and shutdown timeout. These use shell stubs and do not launch the app.
 
 You need a macOS Swift compiler and a macOS SDK supported by that compiler.
 The script uses `xcrun --sdk macosx --show-sdk-path` when available and falls
@@ -48,7 +61,7 @@ architecture. `codesign` is optional and is used only for an ad-hoc local
 signature.
 
 On the first build, `vendor-assets.sh` downloads the pinned upstream Apache-2.0
-animation assets if either asset is absent. Later builds reuse the checked-in
+animation assets if any required frame or animation is absent. Later builds reuse the checked-in
 assets. `Package.swift` is retained as an optional Swift Package Manager
 project description, but `build-app.sh` does not depend on `swift build`.
 
