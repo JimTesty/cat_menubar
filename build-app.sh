@@ -25,7 +25,7 @@ for asset in Resources/kyome/cat{0..4}.png Resources/ruslan/cat-walking.json; do
   fi
 done
 
-mkdir -p "$PWD/build/module-cache"
+mkdir -p "$PWD/build"
 # Stage on the destination filesystem so installation uses directory renames.
 STAGING="$(mktemp -d "$PWD/build/.build-app.XXXXXX")"
 STAGED_APP="$STAGING/$APP_NAME.app"
@@ -52,7 +52,6 @@ SWIFTC_ARGS=(
   -O
   -whole-module-optimization
   -target "$(uname -m)-apple-macosx11.0"
-  -module-cache-path "$PWD/build/module-cache"
   -framework AppKit
   -framework QuartzCore
   -framework IOKit

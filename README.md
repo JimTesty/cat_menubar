@@ -58,7 +58,8 @@ You need a macOS Swift compiler and a macOS SDK supported by that compiler.
 The script uses `xcrun --sdk macosx --show-sdk-path` when available and falls
 back to the compiler's configured SDK. It builds for the current Mac
 architecture. `codesign` is optional and is used only for an ad-hoc local
-signature.
+signature. The compiler's default shared module cache lets compatible SDK
+modules be reused across Swift projects.
 
 On the first build, `vendor-assets.sh` downloads the pinned upstream Apache-2.0
 animation assets if any required frame or animation is absent. Later builds reuse the checked-in
